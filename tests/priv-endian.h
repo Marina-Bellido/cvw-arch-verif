@@ -26,6 +26,7 @@
 // and limitations under the License.
 //
 // Registers used:
+ //  a5= signature pointer
 //   s1: a 1 in bit specific to SBE or UBE to set/clear mstatus, mstatush or status
 //   s3: scratch address
 //   s4: endianness for write test
@@ -46,6 +47,12 @@ endiantest: //Write to memory function
     # Test storing bytes
     li t0, 0x01
     sb t0, 0(s3)
+ //   TEST_STORE()
+
+    // rs1==x27, rs2==x20, rs2_val == 2, 
+    // opcode: sw; op1:x27; op2:x20; op2val:0x2; immval:0x9; align:0
+   // TEST_STORE(x15,x6,0, ,t0,0x2,0x9,24,sb,0)
+
     li t0, 0x02
     sb t0, 1(s3)
     li t0, 0x03
@@ -104,8 +111,12 @@ setendianness:  //function to set/clear the bits depending on the endianness spe
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrs t6, mstatus, s1   # for RV64, set mstatus
+            csrr  t6, mstatus // reading back actual t6 to check proper endianness
+            RVTEST_SIGUPD(a5,t6)   
         #elif __riscv_xlen == 32
             csrrs t6, mstatush, s1  # for RV32, set mstatush
+            csrr  t6, mstatus 
+            RVTEST_SIGUPD(a5,t6)  
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -115,8 +126,12 @@ littleendian:
     #ifdef __riscv_xlen
         #if __riscv_xlen == 64
             csrrc t6, mstatus, s1   # for RV64, clear mstatus
+            csrr  t6, mstatus // reading back actual t6 to check proper endianness
+            RVTEST_SIGUPD(a5,t6)   
         #elif __riscv_xlen == 32
             csrrc t6, mstatush, s1  # for RV32, clear mstatush
+            csrr  t6, mstatus // reading back actual t6 to check proper endianness
+            RVTEST_SIGUPD(a5,t6)   
         #endif
     #else
         ERROR: __riscv_xlen not defined
@@ -130,9 +145,13 @@ onlysstatus3: //used for 3rd EndianS coverpoint: cp_sstatus_ube_endianness_*
     ecall            # Make a system call 
     beqz s8, littleendian3      # little endian
     csrrs t6, sstatus, s1   # set sstatus.UBE
+    csrr  t6, mstatus // reading back actual t6 to check proper endianness
+    RVTEST_SIGUPD(a5,t6)   
     j change
 littleendian3:  
     csrrc t6, sstatus, s1   # clear sstatus.UBE
+    csrr  t6, mstatus // reading back actual t6 to check proper endianness
+    RVTEST_SIGUPD(a5,t6)   
     j change
 
 change: 
@@ -147,6 +166,7 @@ endianaccess:
      mv s8, s5   # setEndianness(read)
     jal setendianness
     lb  t3, 0(s3)
+    RVTEST_SIGUPD(a5,t3)   
     lb  t3, 1(s3)
     lb  t3, 2(s3)
     lb  t3, 3(s3)
