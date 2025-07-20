@@ -38,10 +38,6 @@ main:
 # set up PMP so user and supervisor mode can access full address space
     csrw pmpcfg0, 0xF   # configure PMP0 to TOR RWX
     LI(t0, 0xFFFFFFFF)
-    csrw pmpaddr0, t0   # configure PMP0 top of range to 0xFFFFFFFF to allow all 32-bit addresses
-    csrw satp, x0       # turn off satp to disable VM
-
-    RVTEST_GOTO_MMODE   # set up everything in M-mode
 
     # set mstatus.FS to 01 to enable fp
     LI(t0, 0x4000)
