@@ -25,7 +25,7 @@ RVTEST_CODE_BEGIN
 #ifdef TEST_CASE_1
     RVTEST_CASE(1,"//check ISA:=regex(.*I.*Zicsr.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True",ExceptionsS)
     RVTEST_SIGBASE( x3,signature_base)
-//BLOCKED.*
+
 	.attribute unaligned_access, 0
 	.attribute stack_align, 16
   	.align	2

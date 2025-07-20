@@ -24,7 +24,7 @@ RVMODEL_BOOT
 RVTEST_CODE_BEGIN
 
 #ifdef TEST_CASE_1
-    RVTEST_CASE(1,"//check ISA:=regex(.*I.*Zicsr.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True",ExceptionsU)
+    RVTEST_CASE(1,"//check ISA:=regex(.*I.*Zicsr.*blocked.*); def rvtest_mtrap_routine=True; def rvtest_strap_routine=True; def rvtest_dtrap_routine=True; def TEST_CASE_1=True",ExceptionsU)
     RVTEST_SIGBASE( x3,signature_base)
 
 	.attribute unaligned_access, 0
@@ -38,6 +38,8 @@ main:
 # set up PMP so user and supervisor mode can access full address space
     csrw pmpcfg0, 0xF   # configure PMP0 to TOR RWX
     LI(t0, 0xFFFFFFFF)
+    csrw pmpaddr0, t0   # configure PMP0 top of range to 0xFFFFFFFF to allow all 32-bit addresses
+    csrw satp, x0       # turn off satp to disable VM
 
     # set mstatus.FS to 01 to enable fp
     LI(t0, 0x4000)
